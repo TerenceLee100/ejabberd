@@ -691,7 +691,7 @@ Note that both styles are used in this document.
 In previous \ejabberd{} version the configuration file should be written
 in Erlang terms. The format is still supported, but it is highly recommended
 to convert it to the new YAML format using \term{convert\_to\_yaml} command
-from \term{ejabberdctl} (see~\ref{ejabberdctl} for details).
+from \term{ejabberdctl} (see~\ref{ejabberdctl} and \ref{list-eja-commands} for details).
 
 \makesubsection{hostnames}{Host Names}
 \ind{options!hosts}\ind{host names}
@@ -869,7 +869,8 @@ The available modules, their purpose and the options allowed by each one are:
 \begin{description}
   \titem{\texttt{ejabberd\_c2s}}
     Handles c2s connections.\\
-    Options: \texttt{access}, \texttt{certfile}, \texttt{max\_fsm\_queue},
+    Options: \texttt{access}, \texttt{certfile}, \texttt{ciphers},
+    \texttt{max\_fsm\_queue},
     \texttt{max\_stanza\_size}, \texttt{shaper},
     \texttt{starttls}, \texttt{starttls\_required}, \texttt{tls},
     \texttt{zlib}, \texttt{tls\_compression}
@@ -908,6 +909,8 @@ This is a detailed description of each option allowed by the listening modules:
     Simple web page that allows a user to fill a CAPTCHA challenge (see section \ref{captcha}).
   \titem{certfile: Path} Full path to a file containing the default SSL certificate.
     To define a certificate file specific for a given domain, use the global option \term{domain\_certfile}.
+  \titem{ciphers: Ciphers} OpenSSL ciphers list in the same format accepted by
+  `\verb|openssl ciphers|' command.
   \titem{default\_host: undefined|HostName\}}
     If the HTTP request received by ejabberd contains the HTTP header \term{Host}
     with an ambiguous virtual host that doesn't match any one defined in ejabberd (see \ref{hostnames}),
@@ -1054,6 +1057,8 @@ There are some additional global options that can be specified in the ejabberd c
   file containing a SSL certificate.
   \titem{domain\_certfile: Path} \ind{options!domain\_certfile}
   Full path to the file containing the SSL certificate for a specific domain.
+  \titem{s2s\_ciphers: Ciphers} \ind{options!s2s\_ciphers} OpenSSL ciphers list
+  in the same format accepted by `\verb|openssl ciphers|' command.
   \titem{outgoing\_s2s\_families: [Family, ...]} \ind{options!outgoing\_s2s\_families}
   Specify which address families to try, in what order.
   By default it first tries connecting with IPv4, if that fails it tries using IPv6.
@@ -4034,6 +4039,13 @@ Options:
   This option is disabled by default.
   Important: if you use \modsharedroster{} or \modsharedrosterldap{},
   you must disable this option.
+ \titem{access} \ind{options!access}
+   This option can be configured to specify rules to restrict roster management.
+   If a rule returns `deny' on the requested user name,
+   that user cannot modify his personal roster:
+   not add/remove/modify contacts,
+   or subscribe/unsubscribe presence.
+   By default there aren't restrictions.
 \end{description}
 
 This example configuration enables Roster Versioning with storage of current id:
@@ -4043,6 +4055,24 @@ modules:
   mod_roster:
     versioning: true
     store_current_id: true
+  ...
+\end{verbatim}
+
+With this example configuration, only admins can manage their rosters;
+everybody else cannot modify the roster:
+\begin{verbatim}
+acl:
+  admin:
+    user:
+      - "sarah": "example.org"
+access:
+  roster:
+    admin: allow
+
+modules:
+  ...
+  mod_roster:
+    access: roster
   ...
 \end{verbatim}
 
@@ -5129,6 +5159,8 @@ The most interesting ones are:
 \titem{reopen\_log} Reopen the log files after they were renamed.
   If the old files were not renamed before calling this command,
   they are automatically renamed to \term{"*-old.log"}. See section \ref{logfiles}.
+\titem {convert\_to\_yaml /etc/ejabberd/ejabberd.cfg /etc/ejabberd/ejabberd-converted.yml}
+  Convert an old ejabberd.cfg file to the YAML syntax in a new file.
 \titem {backup ejabberd.backup}
   Store internal Mnesia database to a binary backup file.
 \titem {restore ejabberd.backup}
