@@ -141,8 +141,8 @@ init({SockMod, Socket}, Opts) ->
                                     iolist_to_binary(Path), <<"/">>),
                                   Mod} || {Path, Mod} <- Hs]
                         end, []),
-    RequestHandlers = DefinedHandlers ++ Captcha ++ Register ++
-        Admin ++ Bind ++ Poll,
+    RequestHandlers = Captcha ++ Register ++
+        Admin ++ Bind ++ Poll ++ DefinedHandlers,
     ?DEBUG("S: ~p~n", [RequestHandlers]),
 
     DefaultHost = gen_mod:get_opt(default_host, Opts, fun(A) -> A end, undefined),

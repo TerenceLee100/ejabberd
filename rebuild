@@ -1,0 +1,4 @@
+make;
+cp ./ebin/*.beam /lib/ejabberd/ebin;
+ejabberdctl update all;
+ejabberdctl reopen_log
